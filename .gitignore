@@ -57,3 +57,8 @@ typings/
 # dotenv environment variables file
 .env
 
+# Vim swap files
+.sw*~
+
+# Vim autocompletion file
+.tern-project

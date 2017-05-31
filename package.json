@@ -1,0 +1,34 @@
+{
+  "name": "data_visualization",
+  "version": "1.0.0",
+  "description": "Data visualization exercises for free code camp",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack-dev-server --progress --color",
+    "test": "mocha --compilers coffee:coffee-script/register"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/de-passage/data-visualization.git"
+  },
+  "author": "Sylvain Leclercq",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/de-passage/data-visualization/issues"
+  },
+  "homepage": "https://github.com/de-passage/data-visualization#readme",
+  "dependencies": {
+    "chai": "^4.0.0",
+    "coffee-loader": "^0.7.3",
+    "coffee-script": "^1.12.6",
+    "d3": "^4.9.1",
+    "d3-scale": "^1.0.6",
+    "d3-time": "^1.0.6",
+    "mocha": "^3.4.2",
+    "node-sass": "^4.5.3",
+    "sass-loader": "^6.0.5",
+    "style-loader": "^0.18.1",
+    "webpack": "^2.6.1",
+    "webpack-dev-server": "^2.4.5"
+  }
+}
