@@ -4,7 +4,7 @@
   "description": "Data visualization exercises for free code camp",
   "main": "index.js",
   "scripts": {
-    "start": "webpack-dev-server --progress --color",
+    "start": "webpack-dev-server --inline --progress --color",
     "test": "mocha --compilers coffee:coffee-script/register"
   },
   "repository": {
@@ -21,6 +21,7 @@
     "chai": "^4.0.0",
     "coffee-loader": "^0.7.3",
     "coffee-script": "^1.12.6",
+    "css-loader": "^0.28.4",
     "d3": "^4.9.1",
     "d3-scale": "^1.0.6",
     "d3-time": "^1.0.6",
