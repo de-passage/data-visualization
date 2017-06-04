@@ -23,6 +23,88 @@ $ ->
   tooltip = d3.select(document.body).append("div")
     .classed("tooltip transparent", true)
 
+  do ->
+    url = "https://raw.githubusercontent.com/DealPete/forceDirected/master/countries.json"
+
+    frame = d3.select("body")
+      .append("div")
+      .style("height", "#{frameHeight}px")
+      .style("width", "#{frameWidth}px")
+      .classed("chart", true)
+      .append("div")
+      .classed("abspos", true)
+      .style("height", "#{frameHeight}px")
+      .style("width", "#{frameWidth}px")
+      .style("margin-top", topMargin)
+    #context = frame.node().getContext("2d")
+
+    d3.json url, (error, json) ->
+      if error?
+        console.log "Error: ", JSON.stringify error
+        alert "An error has occured while loading the country data. See the logs for more details"
+        return
+      nodes = json.nodes
+      links = json.links
+
+      gravity = 0.03
+
+      simulation = d3.forceSimulation()
+        .force("link", d3.forceLink().distance(30).strength(1))
+        .force("charge", d3.forceManyBody())
+        .force("x", d3.forceX(frameWidth / 2).strength(gravity))
+        .force("y", d3.forceY(frameHeight / 2).strength(gravity * 1.55))
+        .force("center", d3.forceCenter(frameWidth / 2, frameHeight / 2))
+
+      drawGraph = (n, l) ->
+        l
+          .attr("x1", (d) -> d.source.x)
+          .attr("y1", (d) -> d.source.y)
+          .attr("x2", (d) -> d.target.x)
+          .attr("y2", (d) -> d.target.y)
+        n
+          .style("left", (d) -> (d.x - 8)  + "px")
+          .style("top", (d) -> (d.y - 5) + "px")
+
+      link = frame.append("svg")
+        .attr("width", frameWidth)
+        .attr("height", frameHeight)
+        .selectAll("line")
+        .data(links)
+        .enter().append("line")
+        .style("stroke-width", (d) -> Math.sqrt d.value + "px")
+        .style("stroke", "#CCC")
+
+      lookupNeighbours = (idx) ->
+        sourceLinks = (l.target.country for l in links when l.source.index == idx)
+        targetLinks = (l.source.country for l in links when l.target.index == idx)
+        sourceLinks.push target for target in targetLinks when sourceLinks.indexOf target == -1
+        sourceLinks.join(", ")
+
+      node = frame
+        .selectAll("img")
+        .data(nodes)
+        .enter().append("img")
+        .attr("class", (d) -> "flag flag-#{d.code}")
+        .on("mouseover", (d, i) ->
+          coords = d3.mouse document.body
+          tooltip.html "Country: #{d.country}<br><br>Neighbours: #{lookupNeighbours(i)}"
+          tooltip.classed "transparent", false
+          tooltip.style("left", "#{coords[0] + 20}px").style("top", "#{coords[1] + topMargin}px")
+        )
+        .on("mousemove", ->
+          coords = d3.mouse document.body
+          tooltip.style("left", "#{coords[0] + 20}px").style("top", "#{coords[1] + topMargin}px"))
+        .on("mouseout", -> tooltip.classed "transparent", true)
+
+      simulation
+        .nodes(nodes)
+        .on("tick", -> drawGraph(node, link))
+
+      simulation
+        .force("link")
+        .links(links)
+
+
 
   do ->
     url = "https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/global-temperature.json"
@@ -39,9 +121,9 @@ $ ->
     d3.json url, (error, json) ->
       if error?
         console.log "Error: ", JSON.stringify error
-        alert "An error has occured while loading the data. See the logs for more details"
+        alert "An error has occured while loading the heat map data. See the logs for more details"
         return
-      #console.log "Success: ", JSON.stringify data
+
       data = json.monthlyVariance
 
       colors = ["darkblue", "blue", "yellow", "orange", "red", "darkred"]

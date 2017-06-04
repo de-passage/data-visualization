@@ -12,6 +12,7 @@ module.exports = {
 							 }, { loader: "sass-loader" // compiles Sass to CSS 
 								 , options: { indentedSyntax: true }
 							 }]},
+    { test: /\.css$/, use: [{loader: "style-loader"}, {loader: "css-loader" }]},
     { test: /\.coffee$/, loader: "coffee-loader" },
     { test: /\.haml$/, loader: "haml-loader" }
     ]
