@@ -1,5 +1,5 @@
 d3 = Object.assign require("d3"), require("d3-time"), require("d3-scale")
-
+topojson = require "topojson"
 
 
 $ ->
@@ -22,6 +22,76 @@ $ ->
 
   tooltip = d3.select(document.body).append("div")
     .classed("tooltip transparent", true)
+
+
+  do ->
+    url = "https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/meteorite-strike-data.json"
+    map_url = "https://d3js.org/world-50m.v1.json"
+    frame = d3.select("body")
+      .append("svg")
+      .classed("chart", true)
+      .attr("width", frameWidth)
+      .attr("height", frameHeight)
+    projection = d3.geoEquirectangular()
+      .scale(130)
+      .rotate([0, 0])
+      .center([0, 0])
+      .translate([frameWidth / 2, frameHeight / 2])
+    geoPath = d3.geoPath()
+      .projection(projection)
+
+    d3.json map_url, (error, json) ->
+      if error?
+        console.log "Error: ", JSON.stringify error
+        alert "An error has occured while loading the country data. See the logs for more details"
+        return
+      
+      frame.append("g").selectAll("path")
+        .data(topojson.feature(json, json.objects.countries).features)
+        .enter()
+        .append("path")
+        .attr("fill", "#CCF")
+        .attr("stroke", "#888")
+        .attr("d", geoPath)
+
+      d3.json url, (error, json) ->
+        if error?
+          console.log "Error: ", JSON.stringify error
+          alert "An error has occured while loading the geo data. See the logs for more details"
+
+        json.features.sort((a, b) -> b.properties.mass - a.properties.mass)
+        massScale = d3.scalePow().exponent(0.5).domain([d3.min(json.features, (d) -> +d.properties.mass), d3.max(json.features, (d) -> +d.properties.mass)]).range([0.5, 20])
+        colorScale = d3.scaleLinear().domain([d3.min(json.features, (d) -> +(d.properties.id)), d3.max(json.features, (d) -> +(d.properties.id))]).range([0, 359])
+
+        f = (i) ->
+          (d) ->
+            projection([d.properties.reclong, d.properties.reclat])[i]
+        
+        frame.append("g").selectAll("circle")
+          .data(json.features)
+          .enter()
+          .append("circle")
+          .attr("cx",f(0))
+          .attr("cy",f(1))
+          .attr("r", (d) -> massScale +d.properties.mass)
+          .style("fill", (d) -> "hsl(#{colorScale(+d.properties.id)}, 100%, 50%)" )
+          .style("stroke", "white")
+          .style("fill-opacity", (d) -> massScale.range([0.8, 0.3]) d.properties.mass)
+          .on("mouseover", (d, i) ->
+            coords = d3.mouse document.body
+            tooltip.html "Name: #{d.properties.name}<br>
+                          Year: #{(new Date d.properties.year).getFullYear()}<br>
+                          Mass: #{d.properties.mass}<br>
+                          Coordinates:<br>#{(+d.properties.reclat).toFixed(2)}, #{(+d.properties.reclong).toFixed(2)}<br>
+                          Class: #{d.properties.recclass}"
+            tooltip.classed "transparent", false
+            tooltip.style("left", "#{coords[0] + 20}px").style("top", "#{coords[1] + topMargin}px")
+          )
+          .on("mousemove", ->
+            coords = d3.mouse document.body
+            tooltip.style("left", "#{coords[0] + 20}px").style("top", "#{coords[1] + topMargin}px"))
+          .on("mouseout", -> tooltip.classed "transparent", true)
+
 
   do ->
     url = "https://raw.githubusercontent.com/DealPete/forceDirected/master/countries.json"
